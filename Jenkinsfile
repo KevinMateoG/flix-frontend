@@ -50,7 +50,7 @@ pipeline {
       steps {
         sh '''
           set -eu
-          npm run start > frontend.log 2>&1 &
+          HOSTNAME=127.0.0.1 PORT=5173 node .next/standalone/server.js > frontend.log 2>&1 &
           FRONTEND_PID=$!
           trap 'kill "$FRONTEND_PID" 2>/dev/null || true' EXIT
 
