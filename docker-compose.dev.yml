@@ -60,7 +60,7 @@ services:
       NODE_ENV: production
       PORT: "5173"
       HOSTNAME: 0.0.0.0
-      BACKEND: http://host.docker.internal:3000
+      BACKEND: http://backend:3000
       NEXT_PUBLIC_URL: http://localhost:5173
     depends_on:
       backend:
