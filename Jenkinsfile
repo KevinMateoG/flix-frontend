@@ -26,20 +26,6 @@ pipeline {
       }
     }
 
-    stage('Playwright Install') {
-      agent {
-        docker {
-          image 'node:22-bookworm'
-          reuseNode true
-        }
-      }
-      steps {
-        sh '''
-          npx --yes playwright@1.52.0 install --with-deps chromium
-        '''
-      }
-    }
-
     stage('Playwright Test') {
       agent {
         docker {
@@ -50,6 +36,9 @@ pipeline {
       steps {
         sh '''
           set -eu
+          npm install --no-save --package-lock=false --ignore-scripts @playwright/test@1.52.0
+          ./node_modules/.bin/playwright install --with-deps chromium
+
           HOSTNAME=127.0.0.1 PORT=5173 node .next/standalone/server.js > frontend.log 2>&1 &
           FRONTEND_PID=$!
           trap 'kill "$FRONTEND_PID" 2>/dev/null || true' EXIT
@@ -68,7 +57,7 @@ pipeline {
             exit 1
           fi
 
-          npx --yes playwright@1.52.0 test
+          ./node_modules/.bin/playwright test
         '''
       }
     }
