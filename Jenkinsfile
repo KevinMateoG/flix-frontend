@@ -3,31 +3,50 @@ pipeline {
 
   stages {
     stage('Npm Install') {
-      agent any
+      agent {
+        docker {
+          image 'node:22-bookworm'
+          reuseNode true
+        }
+      }
       steps {
         sh 'npm ci'
       }
     }
 
     stage('Build') {
-      agent any
+      agent {
+        docker {
+          image 'node:22-bookworm'
+          reuseNode true
+        }
+      }
       steps {
         sh 'npm run build'
       }
     }
 
     stage('Playwright Install') {
-      agent any
+      agent {
+        docker {
+          image 'node:22-bookworm'
+          reuseNode true
+        }
+      }
       steps {
         sh '''
-          npm install --no-save --ignore-scripts @playwright/test@1.52.0
-          npx playwright install --with-deps chromium
+          npx --yes playwright@1.52.0 install --with-deps chromium
         '''
       }
     }
 
     stage('Playwright Test') {
-      agent any
+      agent {
+        docker {
+          image 'node:22-bookworm'
+          reuseNode true
+        }
+      }
       steps {
         sh '''
           set -eu
@@ -35,12 +54,21 @@ pipeline {
           FRONTEND_PID=$!
           trap 'kill "$FRONTEND_PID" 2>/dev/null || true' EXIT
 
+          ready=false
           for attempt in $(seq 1 30); do
-            curl --fail --silent http://127.0.0.1:5173/login >/dev/null && break
+            if curl --fail --silent http://127.0.0.1:5173/login >/dev/null; then
+              ready=true
+              break
+            fi
             sleep 2
           done
 
-          PLAYWRIGHT_BASE_URL=http://127.0.0.1:5173 npx playwright test
+          if [ "$ready" != true ]; then
+            cat frontend.log
+            exit 1
+          fi
+
+          npx --yes playwright@1.52.0 test
         '''
       }
     }
@@ -65,11 +93,11 @@ pipeline {
           usernameVariable: 'dockerHubUser'
         )]) {
           sh 'echo "$dockerHubPassword" | docker login -u "$dockerHubUser" --password-stdin'
+          sh 'docker push kevinmateog/flix-frontend:$BUILD_NUMBER'
           sh 'docker push kevinmateog/flix-frontend:latest'
           sh 'docker logout'
         }
       }
     }
-
   }
 }
