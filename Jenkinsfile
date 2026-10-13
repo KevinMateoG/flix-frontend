@@ -1,15 +1,15 @@
 pipeline {
-  agent any
+  agent none
 
   environment {
     IMAGE = 'kevinmateog/flix-frontend'
     NAMESPACE = 'flix-frontend-ci'
     PLAYWRIGHT_BASE_URL = 'http://127.0.0.1:18080'
-    BACKEND_IMAGE = 'kevinmateog/flix-backend:latest'
   }
 
   stages {
     stage('Install and build') {
+      agent any
       steps {
         sh '''
           set -eu
@@ -20,6 +20,7 @@ pipeline {
     }
 
     stage('Playwright dependencies') {
+      agent any
       steps {
         sh '''
           set -eu
@@ -30,11 +31,12 @@ pipeline {
     }
 
     stage('Build and push image') {
+      agent any
       steps {
         script {
           withCredentials([
             usernamePassword(
-              credentialsId: 'dockerhub',
+              credentialsId: 'dockerHub',
               usernameVariable: 'DOCKERHUB_USERNAME',
               passwordVariable: 'DOCKERHUB_TOKEN'
             )
@@ -54,6 +56,7 @@ pipeline {
     }
 
     stage('Deploy stack in Minikube') {
+      agent any
       steps {
         script {
           withCredentials([
@@ -64,7 +67,7 @@ pipeline {
             sh '''
               set -eu
               minikube status >/dev/null 2>&1 || minikube start --driver=docker
-              minikube image load "$IMAGE:$BUILD_NUMBER"
+              minikube image load "kevinmateog/flix-frontend:$BUILD_NUMBER"
               kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
               kubectl -n "$NAMESPACE" create secret generic flix-secrets \
                 --from-literal=POSTGRES_PASSWORD="$DB_PASSWORD" \
@@ -120,7 +123,7 @@ pipeline {
                   spec:
                     containers:
                       - name: backend
-                        image: $BACKEND_IMAGE
+                        image: kevinmateog/flix-backend:latest
                         ports: [{ containerPort: 3000 }]
                         env:
                           - { name: PORT, value: "3000" }
@@ -160,7 +163,7 @@ pipeline {
                   spec:
                     containers:
                       - name: frontend
-                        image: $IMAGE:$BUILD_NUMBER
+                        image: kevinmateog/flix-frontend:$BUILD_NUMBER
                         imagePullPolicy: Never
                         ports: [{ containerPort: 5173 }]
                         env:
@@ -186,6 +189,7 @@ pipeline {
     }
 
     stage('Playwright smoke tests') {
+      agent any
       steps {
         sh '''
           set -eu
