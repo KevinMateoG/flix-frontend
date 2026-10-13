@@ -1,11 +1,6 @@
 pipeline {
   agent any
 
-  options {
-    timestamps()
-    disableConcurrentBuilds()
-  }
-
   environment {
     IMAGE = 'kevinmateog/flix-frontend'
     NAMESPACE = 'flix-frontend-ci'
