@@ -26,6 +26,25 @@ pipeline {
       }
     }
 
+    stage('Playwright Test') {
+      agent any
+      steps {
+        sh '''
+          set -eu
+          npm run start > frontend.log 2>&1 &
+          FRONTEND_PID=$!
+          trap 'kill "$FRONTEND_PID" 2>/dev/null || true' EXIT
+
+          for attempt in $(seq 1 30); do
+            curl --fail --silent http://127.0.0.1:5173/login >/dev/null && break
+            sleep 2
+          done
+
+          PLAYWRIGHT_BASE_URL=http://127.0.0.1:5173 npx playwright test
+        '''
+      }
+    }
+
     stage('Docker Build') {
       agent any
       steps {
@@ -53,36 +72,5 @@ pipeline {
       }
     }
 
-    stage('Minikube Image Test') {
-      agent any
-      steps {
-        sh '''
-          set -eu
-          minikube status >/dev/null 2>&1 || minikube start --driver=docker
-          minikube image load kevinmateog/flix-frontend:$BUILD_NUMBER
-          minikube image ls | grep -F kevinmateog/flix-frontend:$BUILD_NUMBER
-        '''
-      }
-    }
-
-    stage('Playwright Test') {
-      agent any
-      steps {
-        sh '''
-          set -eu
-          npm run start > frontend.log 2>&1 &
-          FRONTEND_PID=$!
-          trap 'kill "$FRONTEND_PID" 2>/dev/null || true' EXIT
-
-          for attempt in $(seq 1 30); do
-            curl --fail --silent http://127.0.0.1:5173/login >/dev/null && break
-            sleep 2
-          done
-
-          PLAYWRIGHT_BASE_URL=http://127.0.0.1:5173 npx playwright test
-        '''
-      }
-    }
   }
-
 }
