@@ -16,10 +16,13 @@ export function isDemoModeActive(
 
 export async function getPlayableMoviesForRegion(region: string): Promise<PlayableContent[]> {
   try {
-    const data = await fetchApi<PlayableContent[]>(
-      `/api/movies?region=${encodeURIComponent(region)}`,
+    const data = await fetchApi<PlayableContent[] | { data?: PlayableContent[] }>(
+      `/api/movies?region=${encodeURIComponent(region)}&limit=100`,
     );
-    return Array.isArray(data) ? data : [];
+    if (Array.isArray(data)) {
+      return data;
+    }
+    return Array.isArray(data?.data) ? data.data : [];
   } catch (error) {
     console.error('Error fetching playable content for region:', error);
     return [];
