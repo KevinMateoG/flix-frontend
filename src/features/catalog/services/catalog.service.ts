@@ -4,6 +4,7 @@ import { tmdb } from '@/src/features/tmdb/services/tmdb.service';
 import {
   fetchTmdbDetails,
   getPlayableMoviesForRegion,
+  getUserRegion,
   isDemoModeActive,
   isTitlePlayableInRegion,
 } from '@/src/features/tmdb/services/region-access.service';
@@ -18,11 +19,12 @@ export async function getBrowsePageData(
   resolvedParams: { [key: string]: string | string[] | undefined },
 ): Promise<BrowsePageData> {
   const genre = (resolvedParams.genre as string) || 'all';
-  const isDemo = isDemoModeActive(resolvedParams);
 
   const profile = await getActiveProfile();
-  const region = profile?.region || 'US';
+  const configuredRegion = await getUserRegion(profile?.region);
+  const region = configuredRegion || 'US';
   const language = getTmdbLanguage(profile?.language);
+  const isDemo = isDemoModeActive(resolvedParams) || !configuredRegion;
 
   let results: TmdbMediaItem[] = [];
 
@@ -71,13 +73,13 @@ export async function getMovieDetailPageData(
   id: number,
   resolvedParams: { [key: string]: string | string[] | undefined },
 ): Promise<MovieDetailPageData | null> {
-  const isDemo = isDemoModeActive(resolvedParams);
-
   const profile = await getActiveProfile();
-  const region = profile?.region || 'US';
+  const configuredRegion = await getUserRegion(profile?.region);
+  const region = configuredRegion || 'US';
   const language = getTmdbLanguage(profile?.language);
+  const isDemo = isDemoModeActive(resolvedParams) || !configuredRegion;
 
-  const isPlayable = await isTitlePlayableInRegion(id, region);
+  const isPlayable = await isTitlePlayableInRegion(id, configuredRegion);
 
   try {
     const [movie, providers] = await Promise.all([
@@ -104,14 +106,15 @@ export async function getTvDetailPageData(
   id: number,
   resolvedParams: { [key: string]: string | string[] | undefined },
 ): Promise<TvDetailPageData | null> {
-  const isDemo = isDemoModeActive(resolvedParams);
   const seasonParam = resolvedParams.season as string | undefined;
 
   const profile = await getActiveProfile();
-  const region = profile?.region || 'US';
+  const configuredRegion = await getUserRegion(profile?.region);
+  const region = configuredRegion || 'US';
   const language = getTmdbLanguage(profile?.language);
+  const isDemo = isDemoModeActive(resolvedParams) || !configuredRegion;
 
-  const isPlayable = await isTitlePlayableInRegion(id, region);
+  const isPlayable = await isTitlePlayableInRegion(id, configuredRegion);
 
   try {
     const [tv, providers] = await Promise.all([

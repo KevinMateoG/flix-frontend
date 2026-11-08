@@ -70,7 +70,7 @@ export function Header({ className }: { className?: string }) {
       )}
     >
       <div className="flex items-center gap-8">
-        <Link href="/home" className="text-headline-md text-primary font-bold tracking-tighter">
+        <Link href="/" className="text-headline-md text-primary font-bold tracking-tighter">
           FLIX
         </Link>
 
