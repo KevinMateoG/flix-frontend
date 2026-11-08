@@ -15,3 +15,16 @@ export interface HomePageData {
   popularTV: TmdbMediaItem[];
   topRated: TmdbMediaItem[];
 }
+
+export interface LandingFeatureItem {
+  badge: string;
+  title: string;
+  description: string;
+}
+
+export interface LandingAudienceItem {
+  role: string;
+  title: string;
+  description: string;
+  highlights: string[];
+}
