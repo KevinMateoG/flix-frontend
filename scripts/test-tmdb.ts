@@ -1,4 +1,4 @@
-import { tmdb } from '../lib/tmdb';
+import { tmdb } from '../src/features/tmdb/services/tmdb.service';
 
 async function test() {
   console.log('Testing TMDB...');
@@ -11,7 +11,7 @@ async function test() {
   console.log('Search:', search.results?.length, 'results');
 
   const movie = await tmdb.movieDetails(27205); // Inception
-  console.log('Movie details:', movie.title, movie.genres?.map((g: any) => g.name).join(', '));
+  console.log('Movie details:', movie.title, movie.genres?.map((g) => g.name).join(', '));
 
   const providers = await tmdb.providers('movie', 27205);
   console.log('Providers US:', Object.keys(providers.results?.US || {}));
