@@ -11,6 +11,19 @@ function parseApiErrorMessage(status: number, errText: string): string {
   return errText || `API Error ${status}`;
 }
 
+function unwrapJsonPayload<T>(json: unknown): T {
+  if (
+    json &&
+    typeof json === 'object' &&
+    'data' in json &&
+    (json as { data?: unknown }).data !== undefined &&
+    !('pagination' in json)
+  ) {
+    return (json as { data: T }).data;
+  }
+  return json as T;
+}
+
 export async function fetchApi<T = unknown>(
   endpoint: string,
   options: RequestInit = {},
@@ -46,8 +59,8 @@ export async function fetchApi<T = unknown>(
 
   const contentType = res.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
-    const json = (await res.json()) as { data?: T } & T;
-    return (json?.data !== undefined ? json.data : json) as T;
+    const json = await res.json();
+    return unwrapJsonPayload<T>(json);
   }
   return null;
 }
@@ -78,6 +91,6 @@ export async function fetchClientApi<T = unknown>(
     throw new Error(parseApiErrorMessage(res.status, errText));
   }
 
-  const json = (await res.json()) as { data?: T } & T;
-  return (json?.data !== undefined ? json.data : json) as T;
+  const json = await res.json();
+  return unwrapJsonPayload<T>(json);
 }
