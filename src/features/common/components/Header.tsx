@@ -15,9 +15,10 @@ gsap.registerPlugin(ScrollTrigger);
 interface HeaderProps {
   className?: string;
   avatarUrl?: string | null;
+  isAdmin?: boolean;
 }
 
-export function Header({ className, avatarUrl }: HeaderProps) {
+export function Header({ className, avatarUrl, isAdmin = false }: HeaderProps) {
   const headerRef = useRef<HTMLElement>(null);
   const { t } = useLanguage();
   const searchParams = useSearchParams();
@@ -98,6 +99,19 @@ export function Header({ className, avatarUrl }: HeaderProps) {
           >
             {t('myList')}
           </Link>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className={cn(
+                'text-body-sm font-medium transition-colors',
+                pathname.startsWith('/admin')
+                  ? 'text-primary font-semibold'
+                  : 'text-muted hover:text-on-background',
+              )}
+            >
+              {t('admin')}
+            </Link>
+          )}
         </nav>
       </div>
 

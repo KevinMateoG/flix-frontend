@@ -19,7 +19,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
     <LanguageProvider locale={profile?.language}>
       <div className="flex min-h-screen flex-col">
         <Suspense fallback={null}>
-          <Header avatarUrl={avatarUrl} />
+          <Header avatarUrl={avatarUrl} isAdmin={user.role === 'admin'} />
         </Suspense>
         <main className="flex-1 pb-20 md:pb-0">{children}</main>
         <Suspense fallback={null}>
