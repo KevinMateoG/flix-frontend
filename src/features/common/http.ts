@@ -6,9 +6,32 @@ function parseApiErrorMessage(status: number, errText: string): string {
     if (parsed?.message) return parsed.message;
     if (parsed?.error) return parsed.error;
   } catch {
-    // fallback to raw text
+    // fallback to HTML / text extraction
   }
-  return errText || `API Error ${status}`;
+
+  const preMatch = errText.match(/<pre>([\s\S]*?)<\/pre>/i);
+  if (preMatch?.[1]) {
+    return `${preMatch[1].trim()} (HTTP ${status})`;
+  }
+
+  if (/<html|<!doctype/i.test(errText)) {
+    return `Backend endpoint unavailable (HTTP ${status})`;
+  }
+
+  return errText.trim() || `API Error ${status}`;
+}
+
+function unwrapJsonPayload<T>(json: unknown): T {
+  if (
+    json &&
+    typeof json === 'object' &&
+    'data' in json &&
+    (json as { data?: unknown }).data !== undefined &&
+    !('pagination' in json)
+  ) {
+    return (json as { data: T }).data;
+  }
+  return json as T;
 }
 
 export async function fetchApi<T = unknown>(
@@ -46,8 +69,8 @@ export async function fetchApi<T = unknown>(
 
   const contentType = res.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
-    const json = (await res.json()) as { data?: T } & T;
-    return (json?.data !== undefined ? json.data : json) as T;
+    const json = await res.json();
+    return unwrapJsonPayload<T>(json);
   }
   return null;
 }
@@ -78,6 +101,6 @@ export async function fetchClientApi<T = unknown>(
     throw new Error(parseApiErrorMessage(res.status, errText));
   }
 
-  const json = (await res.json()) as { data?: T } & T;
-  return (json?.data !== undefined ? json.data : json) as T;
+  const json = await res.json();
+  return unwrapJsonPayload<T>(json);
 }
