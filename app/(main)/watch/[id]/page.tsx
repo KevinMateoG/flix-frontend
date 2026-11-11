@@ -9,6 +9,7 @@ import {
 import { getActiveProfile } from '@/src/features/profile/services/profile.service';
 import type { TmdbMediaType } from '@/src/features/tmdb/domain/tmdb';
 import { tmdb } from '@/src/features/tmdb/services/tmdb.service';
+import { tmdbCatalog } from '@/src/features/tmdb/services/tmdb-catalog.service';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -56,15 +57,21 @@ export default async function WatchPage({ params, searchParams }: Props) {
   let title = 'Video';
   let posterPath = '';
 
+  if (!isTv) {
+    // Deactivated movies (admin) are not watchable: the backend returns 404 for them.
+    const movie = await tmdbCatalog.movieDetails(Number(tmdbId), language);
+    if (!movie) {
+      redirect('/home');
+    }
+    title = movie.title || 'Movie';
+    posterPath = movie.poster_path || '';
+  }
+
   try {
     if (isTv) {
       const show = await tmdb.tvDetails(Number(tmdbId), language);
       title = `${show.name || 'TV Show'} (S${seasonNum}:E${epNum})`;
       posterPath = show.poster_path || '';
-    } else {
-      const movie = await tmdb.movieDetails(Number(tmdbId), language);
-      title = movie.title || 'Movie';
-      posterPath = movie.poster_path || '';
     }
   } catch (err) {
     console.error('Error fetching watch details:', err);

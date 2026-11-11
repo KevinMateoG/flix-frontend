@@ -1,7 +1,7 @@
 import { getMessages, getTmdbLanguage } from '@/src/features/common/config';
 import { getContinueWatching } from '@/src/features/history/services/history.service';
 import { getActiveProfile } from '@/src/features/profile/services/profile.service';
-import { tmdb } from '@/src/features/tmdb/services/tmdb.service';
+import { tmdbCatalog } from '@/src/features/tmdb/services/tmdb-catalog.service';
 import {
   fetchTmdbDetails,
   getPlayableMoviesForRegion,
@@ -67,10 +67,10 @@ export async function getHomePageData(
   }
 
   const [trending, popularMovies, popularTV, topRated] = await Promise.all([
-    tmdb.trending('all', 'week', language),
-    tmdb.popular('movie', 1, region, language),
-    tmdb.popular('tv', 1, region, language),
-    tmdb.topRated('movie', 1, region, language),
+    tmdbCatalog.trending('all', 'week', language),
+    tmdbCatalog.popular('movie', 1, region, language),
+    tmdbCatalog.popular('tv', 1, region, language),
+    tmdbCatalog.topRated('movie', 1, region, language),
   ]);
 
   const hero =

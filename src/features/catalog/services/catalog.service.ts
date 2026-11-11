@@ -1,6 +1,7 @@
 import { getTmdbLanguage } from '@/src/features/common/config';
 import { getActiveProfile } from '@/src/features/profile/services/profile.service';
 import { tmdb } from '@/src/features/tmdb/services/tmdb.service';
+import { tmdbCatalog } from '@/src/features/tmdb/services/tmdb-catalog.service';
 import {
   fetchTmdbDetails,
   getPlayableMoviesForRegion,
@@ -48,13 +49,10 @@ export async function getBrowsePageData(
         );
       }
     } else if (genre === 'all') {
-      const data = await tmdb.popular('movie', 1, region, language);
+      const data = await tmdbCatalog.popular('movie', 1, region, language);
       results = data.results || [];
     } else {
-      const data = await tmdb.discover(
-        { with_genres: genre, region, watch_region: region },
-        language,
-      );
+      const data = await tmdbCatalog.discover(genre, 1, region, language);
       results = data.results || [];
     }
   } catch (err) {
@@ -83,7 +81,7 @@ export async function getMovieDetailPageData(
 
   try {
     const [movie, providers] = await Promise.all([
-      tmdb.movieDetails(id, language),
+      tmdbCatalog.movieDetails(id, language),
       tmdb.providers('movie', id),
     ]);
 

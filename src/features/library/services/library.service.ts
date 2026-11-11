@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { fetchApi } from '@/src/features/common/http';
 import { tmdb } from '@/src/features/tmdb/services/tmdb.service';
+import { tmdbCatalog } from '@/src/features/tmdb/services/tmdb-catalog.service';
 import type {
   DetailedLibraryItem,
   LibraryItem,
@@ -53,7 +54,9 @@ export async function getDetailedMyList(
         const details =
           item.mediaType === 'tv'
             ? await tmdb.tvDetails(item.tmdbId, language)
-            : await tmdb.movieDetails(item.tmdbId, language);
+            : await tmdbCatalog.movieDetails(item.tmdbId, language);
+        // null => movie deactivated by an admin (or not found): hide it from My List.
+        if (!details) return null;
         return {
           ...item,
           title: details.title || details.name,
