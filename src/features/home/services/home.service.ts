@@ -5,6 +5,7 @@ import { tmdb } from '@/src/features/tmdb/services/tmdb.service';
 import {
   fetchTmdbDetails,
   getPlayableMoviesForRegion,
+  getUserRegion,
   isDemoModeActive,
 } from '@/src/features/tmdb/services/region-access.service';
 import type { TmdbMediaItem } from '@/src/features/tmdb/domain/tmdb';
@@ -14,11 +15,12 @@ export async function getHomePageData(
   resolvedParams: { [key: string]: string | string[] | undefined },
 ): Promise<HomePageData> {
   const profile = await getActiveProfile();
-  const region = profile?.region || 'US';
+  const configuredRegion = await getUserRegion(profile?.region);
+  const region = configuredRegion || 'US';
   const language = getTmdbLanguage(profile?.language);
   const messages = getMessages(profile?.language);
 
-  const isDemo = isDemoModeActive(resolvedParams);
+  const isDemo = isDemoModeActive(resolvedParams) || !configuredRegion;
   const continueWatching = profile ? await getContinueWatching(profile.id) : [];
 
   if (!isDemo) {
