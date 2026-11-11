@@ -1,6 +1,6 @@
-import { tmdb } from '@/lib/tmdb';
 import { NextRequest, NextResponse } from 'next/server';
-import { getTmdbLanguage } from '@/lib/i18n';
+import { getTmdbLanguage } from '@/src/features/common/config';
+import { tmdb } from '@/src/features/tmdb/services/tmdb.service';
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,8 +12,9 @@ export async function GET(req: NextRequest) {
 
     const data = await tmdb.search(q.trim(), 1, language);
     return NextResponse.json(data);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Search API error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Internal Server Error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

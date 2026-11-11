@@ -1,8 +1,8 @@
-import { Header } from '@/components/layout/Header';
-import { BottomNav } from '@/components/layout/BottomNav';
-import { LanguageProvider } from '@/components/providers/LanguageProvider';
-import { getActiveProfile } from '@/lib/auth';
 import { Suspense } from 'react';
+import { Header } from '@/src/features/common/components/Header';
+import { BottomNav } from '@/src/features/common/components/BottomNav';
+import { LanguageProvider } from '@/src/features/common/components/LanguageProvider';
+import { getActiveProfile } from '@/src/features/profile/services/profile.service';
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
   const profile = await getActiveProfile();
