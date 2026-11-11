@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   uploadProfileAvatarClient,
@@ -14,6 +14,23 @@ export function useAuth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    authClient
+      .getSession()
+      .then((res: { data?: { user?: unknown } | null } | null) => {
+        if (active && res?.data?.user) {
+          router.replace('/home');
+        }
+      })
+      .catch(() => {
+        // Ignore session check errors when unauthenticated or offline
+      });
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   const login = async ({ email, password }: LoginInput) => {
     setLoading(true);
@@ -30,7 +47,8 @@ export function useAuth() {
       return;
     }
 
-    router.push('/home');
+    router.replace('/home');
+    router.refresh();
   };
 
   const loginWithGoogle = async () => {
@@ -97,7 +115,8 @@ export function useAuth() {
       }
     }
 
-    router.push('/home');
+    router.replace('/home');
+    router.refresh();
   };
 
   const forgotPassword = async (email: string) => {
@@ -149,7 +168,8 @@ export function useAuth() {
     }
 
     await authClient.signOut();
-    router.push('/home');
+    router.replace('/login');
+    router.refresh();
   };
 
   return {
