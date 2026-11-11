@@ -1,7 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  uploadProfileAvatarClient,
+  validateAvatarFile,
+} from '@/src/features/profile/services/avatar.service';
 import { authClient } from '../services/auth-client';
 import type { LoginInput, RegisterInput, ResetPasswordInput } from '../domain/auth';
 
@@ -10,6 +14,23 @@ export function useAuth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    authClient
+      .getSession()
+      .then((res: { data?: { user?: unknown } | null } | null) => {
+        if (active && res?.data?.user) {
+          router.replace('/home');
+        }
+      })
+      .catch(() => {
+        // Ignore session check errors when unauthenticated or offline
+      });
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   const login = async ({ email, password }: LoginInput) => {
     setLoading(true);
@@ -26,7 +47,8 @@ export function useAuth() {
       return;
     }
 
-    router.push('/home');
+    router.replace('/home');
+    router.refresh();
   };
 
   const loginWithGoogle = async () => {
@@ -36,7 +58,13 @@ export function useAuth() {
     });
   };
 
-  const register = async ({ name, email, password, confirmPassword }: RegisterInput) => {
+  const register = async ({
+    name,
+    email,
+    password,
+    confirmPassword,
+    avatarFile,
+  }: RegisterInput) => {
     setLoading(true);
     setError(null);
 
@@ -58,8 +86,17 @@ export function useAuth() {
       return;
     }
 
+    if (avatarFile) {
+      const avatarValidationError = validateAvatarFile(avatarFile);
+      if (avatarValidationError) {
+        setError(avatarValidationError);
+        setLoading(false);
+        return;
+      }
+    }
+
     const { error: authError } = await authClient.signUp.email({
-      email,
+      email: email.trim(),
       password,
       name: name.trim(),
     });
@@ -70,7 +107,16 @@ export function useAuth() {
       return;
     }
 
-    router.push('/home');
+    if (avatarFile) {
+      try {
+        await uploadProfileAvatarClient(avatarFile);
+      } catch (uploadErr) {
+        console.error('Error uploading profile avatar after registration:', uploadErr);
+      }
+    }
+
+    router.replace('/home');
+    router.refresh();
   };
 
   const forgotPassword = async (email: string) => {
@@ -122,7 +168,8 @@ export function useAuth() {
     }
 
     await authClient.signOut();
-    router.push('/home');
+    router.replace('/login');
+    router.refresh();
   };
 
   return {

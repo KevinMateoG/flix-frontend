@@ -6,3 +6,4 @@ export default async function RootPage() {
 
   return <LandingView isAuthenticated={Boolean(user)} />;
 }
+

@@ -1,5 +1,16 @@
 import { appConfig } from './config';
 
+function parseApiErrorMessage(status: number, errText: string): string {
+  try {
+    const parsed = JSON.parse(errText) as { message?: string; error?: string };
+    if (parsed?.message) return parsed.message;
+    if (parsed?.error) return parsed.error;
+  } catch {
+    // fallback to raw text
+  }
+  return errText || `API Error ${status}`;
+}
+
 export async function fetchApi<T = unknown>(
   endpoint: string,
   options: RequestInit = {},
@@ -15,7 +26,8 @@ export async function fetchApi<T = unknown>(
   if (cookieHeader) {
     headers.set('Cookie', cookieHeader);
   }
-  if (!headers.has('Content-Type') && options.body) {
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+  if (!headers.has('Content-Type') && options.body && !isFormData) {
     headers.set('Content-Type', 'application/json');
   }
   if (!headers.has('Origin')) {
@@ -29,7 +41,7 @@ export async function fetchApi<T = unknown>(
 
   if (!res.ok) {
     const errText = await res.text();
-    throw new Error(`API Error ${res.status}: ${errText}`);
+    throw new Error(parseApiErrorMessage(res.status, errText));
   }
 
   const contentType = res.headers.get('content-type');
@@ -45,7 +57,8 @@ export async function fetchClientApi<T = unknown>(
   options: RequestInit = {},
 ): Promise<T> {
   const headers = new Headers(options.headers);
-  if (!headers.has('Content-Type') && options.body) {
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+  if (!headers.has('Content-Type') && options.body && !isFormData) {
     headers.set('Content-Type', 'application/json');
   }
 
@@ -62,7 +75,7 @@ export async function fetchClientApi<T = unknown>(
 
   if (!res.ok) {
     const errText = await res.text();
-    throw new Error(`API Error ${res.status}: ${errText}`);
+    throw new Error(parseApiErrorMessage(res.status, errText));
   }
 
   const json = (await res.json()) as { data?: T } & T;
