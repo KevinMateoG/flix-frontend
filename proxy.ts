@@ -5,7 +5,7 @@ import type { AuthSession } from '@/src/features/auth/domain/auth';
 const LOCAL_API_ROUTES = ['/api/search'];
 
 const AUTH_ROUTES = ['/login', '/register'];
-const PRIVATE_ROUTES = ['/my-list', '/profile', '/settings', '/watch', '/admin'];
+const PUBLIC_AUTH_ROUTES = ['/login', '/register', '/forgot-password', '/reset-password'];
 const ADMIN_ROUTES = ['/admin'];
 
 function matchesRoutePrefix(pathname: string, prefixes: string[]): boolean {
@@ -58,17 +58,13 @@ export async function proxy(request: NextRequest) {
   }
 
   const isAuthRoute = matchesRoutePrefix(pathname, AUTH_ROUTES);
-  const isPrivateRoute = matchesRoutePrefix(pathname, PRIVATE_ROUTES);
+  const isPublicAuthRoute = matchesRoutePrefix(pathname, PUBLIC_AUTH_ROUTES);
   const isAdminRoute = matchesRoutePrefix(pathname, ADMIN_ROUTES);
-
-  if (!isAuthRoute && !isPrivateRoute) {
-    return NextResponse.next();
-  }
 
   const cookiePresent = hasSessionCookie(request);
 
   if (!cookiePresent) {
-    if (isPrivateRoute) {
+    if (!isPublicAuthRoute) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
     return NextResponse.next();
@@ -83,8 +79,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (isPublicAuthRoute) {
+    return NextResponse.next();
+  }
+
   if (!session?.user) {
     return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL('/home', request.url));
   }
 
   if (isAdminRoute && session.user.role !== 'admin') {
@@ -96,13 +100,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/api/:path*',
-    '/login',
-    '/register',
-    '/my-list/:path*',
-    '/profile/:path*',
-    '/settings/:path*',
-    '/watch/:path*',
-    '/admin/:path*',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };
