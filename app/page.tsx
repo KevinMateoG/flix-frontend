@@ -1,7 +1,9 @@
-import { redirect } from 'next/navigation';
 import { getUser } from '@/src/features/auth/services/auth.service';
+import { LandingView } from '@/src/features/home/components/LandingView';
 
 export default async function RootPage() {
   const user = await getUser();
-  redirect(user ? '/home' : '/login');
+
+  return <LandingView isAuthenticated={Boolean(user)} />;
 }
+

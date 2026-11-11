@@ -57,9 +57,14 @@ export async function proxy(request: NextRequest) {
     return NextResponse.rewrite(new URL(`${pathname}${search}`, backend));
   }
 
+  const isLandingRoute = pathname === '/';
   const isAuthRoute = matchesRoutePrefix(pathname, AUTH_ROUTES);
   const isPublicAuthRoute = matchesRoutePrefix(pathname, PUBLIC_AUTH_ROUTES);
   const isAdminRoute = matchesRoutePrefix(pathname, ADMIN_ROUTES);
+
+  if (isLandingRoute) {
+    return NextResponse.next();
+  }
 
   const cookiePresent = hasSessionCookie(request);
 
@@ -85,10 +90,6 @@ export async function proxy(request: NextRequest) {
 
   if (!session?.user) {
     return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  if (pathname === '/') {
-    return NextResponse.redirect(new URL('/home', request.url));
   }
 
   if (isAdminRoute && session.user.role !== 'admin') {
