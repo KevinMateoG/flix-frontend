@@ -24,7 +24,7 @@ export function LoginForm() {
 
       <div className="bg-surface relative z-10 flex w-full max-w-5xl overflow-hidden rounded-2xl shadow-2xl shadow-black/60">
         <div className="bg-surface-container hidden flex-col items-start justify-between p-12 md:flex md:w-5/12">
-          <Link href="/home" className="text-display-lg text-primary font-bold tracking-tighter">
+          <Link href="/login" className="text-display-lg text-primary font-bold tracking-tighter">
             FLIX
           </Link>
           <div>
@@ -41,7 +41,7 @@ export function LoginForm() {
         <div className="w-full p-8 md:w-7/12 md:p-12">
           <div className="mb-8 text-center md:text-left">
             <Link
-              href="/home"
+              href="/login"
               className="text-display-lg text-primary font-bold tracking-tighter md:hidden"
             >
               FLIX
