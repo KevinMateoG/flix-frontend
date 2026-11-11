@@ -12,7 +12,12 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 gsap.registerPlugin(ScrollTrigger);
 
-export function Header({ className }: { className?: string }) {
+interface HeaderProps {
+  className?: string;
+  avatarUrl?: string | null;
+}
+
+export function Header({ className, avatarUrl }: HeaderProps) {
   const headerRef = useRef<HTMLElement>(null);
   const { t } = useLanguage();
   const searchParams = useSearchParams();
@@ -121,9 +126,13 @@ export function Header({ className }: { className?: string }) {
         </Link>
         <Link
           href="/profile"
-          className="bg-surface-container hover:bg-surface-bright flex h-8 w-8 items-center justify-center rounded-full transition-colors"
+          className="bg-surface-container hover:bg-surface-bright border-surface-bright/40 flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border transition-colors"
         >
-          <User size={16} className="text-on-surface" />
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={t('profile')} className="h-full w-full object-cover" />
+          ) : (
+            <User size={16} className="text-on-surface" />
+          )}
           <span className="sr-only">{t('profile')}</span>
         </Link>
       </div>

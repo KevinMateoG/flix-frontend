@@ -6,12 +6,13 @@ import { getActiveProfile } from '@/src/features/profile/services/profile.servic
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
   const profile = await getActiveProfile();
+  const avatarUrl = profile?.avatarUrl || profile?.avatar_url || null;
 
   return (
     <LanguageProvider locale={profile?.language}>
       <div className="flex min-h-screen flex-col">
         <Suspense fallback={null}>
-          <Header />
+          <Header avatarUrl={avatarUrl} />
         </Suspense>
         <main className="flex-1 pb-20 md:pb-0">{children}</main>
         <Suspense fallback={null}>

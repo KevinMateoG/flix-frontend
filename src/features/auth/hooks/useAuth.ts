@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  uploadProfileAvatarClient,
+  validateAvatarFile,
+} from '@/src/features/profile/services/avatar.service';
 import { authClient } from '../services/auth-client';
 import type { LoginInput, RegisterInput, ResetPasswordInput } from '../domain/auth';
 
@@ -36,7 +40,13 @@ export function useAuth() {
     });
   };
 
-  const register = async ({ name, email, password, confirmPassword }: RegisterInput) => {
+  const register = async ({
+    name,
+    email,
+    password,
+    confirmPassword,
+    avatarFile,
+  }: RegisterInput) => {
     setLoading(true);
     setError(null);
 
@@ -58,8 +68,17 @@ export function useAuth() {
       return;
     }
 
+    if (avatarFile) {
+      const avatarValidationError = validateAvatarFile(avatarFile);
+      if (avatarValidationError) {
+        setError(avatarValidationError);
+        setLoading(false);
+        return;
+      }
+    }
+
     const { error: authError } = await authClient.signUp.email({
-      email,
+      email: email.trim(),
       password,
       name: name.trim(),
     });
@@ -68,6 +87,14 @@ export function useAuth() {
       setError(authError.message || 'An error occurred');
       setLoading(false);
       return;
+    }
+
+    if (avatarFile) {
+      try {
+        await uploadProfileAvatarClient(avatarFile);
+      } catch (uploadErr) {
+        console.error('Error uploading profile avatar after registration:', uploadErr);
+      }
     }
 
     router.push('/home');
