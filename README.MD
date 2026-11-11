@@ -2,7 +2,7 @@
 
 Aplicación web frontend de **Flix**, una plataforma full-stack de streaming y descubrimiento de películas y series desarrollada como Proyecto de Aula de Desarrollo Web Full-Stack (2026-2). Construida con **Next.js (App Router)**, **React**, **TypeScript** y **Tailwind CSS** bajo una arquitectura limpia organizada por *features*.
 
-Se conecta a la API REST del [backend de Flix](https://github.com/KevinMateoG/flix-backend), la cual utiliza **Neon (PostgreSQL Serverless)** como base de datos en la nube y **Better Auth** para la gestión de autenticación, sesiones y control de acceso basado en roles (`admin` y `user`). Además, integra el catálogo de **TMDB**, almacenamiento de imágenes en un **Bucket S3** y reproducción de video con **Mux**.
+Se conecta a la API REST del [backend de Flix](https://flix-backend-six.vercel.app/), la cual utiliza **Neon (PostgreSQL Serverless)** como base de datos en la nube y **Better Auth** para la gestión de autenticación, sesiones y control de acceso basado en roles (`admin` y `user`). Además, integra el catálogo de **TMDB**, almacenamiento de imágenes en un **Bucket S3** y reproducción de video con **Mux**.
 
 ---
 
@@ -26,8 +26,8 @@ Se conecta a la API REST del [backend de Flix](https://github.com/KevinMateoG/fl
 
 | Elemento | Plataforma | Enlace |
 | --- | --- | --- |
-| **Frontend desplegado (Producción)** | Vercel | `[PEGAR_LINK_FRONTEND_VERCEL_AQUI]` |
-| **Backend / API desplegada (Producción)** | Vercel / Cloud | `[PEGAR_LINK_BACKEND_VERCEL_AQUI]` |
+| **Frontend desplegado (Producción)** | Vercel | `[https://flix-frontend-nine.vercel.app/]` |
+| **Backend / API desplegada (Producción)** | Vercel / Cloud | `[https://flix-backend-six.vercel.app/]` |
 | **Repositorio Frontend** | GitHub | [https://github.com/KevinMateoG/flix-frontend](https://github.com/KevinMateoG/flix-frontend) |
 | **Repositorio Backend** | GitHub | [https://github.com/KevinMateoG/flix-backend](https://github.com/KevinMateoG/flix-backend) |
 
