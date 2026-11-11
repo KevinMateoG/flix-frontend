@@ -1,10 +1,11 @@
 import Link from 'next/link';
-import { User, Settings, CreditCard, LogOut, ChevronRight } from 'lucide-react';
+import { Settings, CreditCard, LogOut, ChevronRight, ShieldCheck } from 'lucide-react';
 import { Button } from '@/src/features/common/components/Button';
 import { signOutAction } from '@/src/features/auth/services/auth.service';
 import type { AuthUser } from '@/src/features/auth/domain/auth';
 import { REGIONS, type Profile } from '../domain/profile';
 import { updateProfileRegionFormAction } from '../services/profile.service';
+import { ProfileAvatarEditor } from './ProfileAvatarEditor';
 
 interface ProfileViewProps {
   user: AuthUser;
@@ -16,26 +17,47 @@ export function ProfileView({ user, profile }: ProfileViewProps) {
     profile?.displayName || profile?.display_name || user.email?.split('@')[0] || 'User';
   const plan = profile?.plan || 'free';
   const region = profile?.region || 'US';
+  const avatarUrl = profile?.avatarUrl || profile?.avatar_url || user.image || null;
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col px-4 py-6 md:px-12 md:py-10">
       <h1 className="text-display-lg-mobile md:text-display-lg text-on-background mb-8">Profile</h1>
 
-      <div className="bg-surface-container mb-8 flex items-center gap-4 rounded-lg p-6">
-        <div className="bg-surface-bright flex h-20 w-20 shrink-0 items-center justify-center rounded-full">
-          <User size={40} className="text-on-surface" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <h2 className="text-headline-sm text-on-background font-semibold">{displayName}</h2>
-          <p className="text-body-sm text-muted">{user.email}</p>
-          <div className="bg-primary/20 text-label-caps text-primary mt-2 inline-flex items-center rounded px-2 py-1 uppercase">
-            {plan} Plan
+      <div className="bg-surface-container mb-8 flex flex-col justify-between gap-6 rounded-lg p-6 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <ProfileAvatarEditor initialAvatarUrl={avatarUrl} displayName={displayName} />
+          <div className="flex flex-col gap-1 sm:border-l sm:border-white/10 sm:pl-6">
+            <h2 className="text-headline-sm text-on-background font-semibold">{displayName}</h2>
+            <p className="text-body-sm text-muted">{user.email}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="bg-primary/20 text-label-caps text-primary inline-flex items-center rounded px-2 py-1 uppercase">
+                {plan} Plan
+              </span>
+              {user.role === 'admin' && (
+                <span className="border-primary/40 bg-primary/10 text-label-caps text-primary inline-flex items-center rounded border px-2 py-1 uppercase">
+                  Admin
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
         <h3 className="text-label-caps text-muted mb-2">Account Settings</h3>
+
+        {user.role === 'admin' && (
+          <Link
+            href="/admin"
+            className="bg-surface-container hover:bg-surface-bright border-primary/30 flex w-full items-center justify-between rounded-lg border p-4 text-left transition-colors"
+          >
+            <div className="flex items-center gap-4">
+              <ShieldCheck size={20} className="text-primary" />
+              <span className="text-body-lg text-on-background font-medium">Admin Dashboard</span>
+            </div>
+            <ChevronRight size={20} className="text-muted" />
+          </Link>
+        )}
 
         <Link
           href="/settings"

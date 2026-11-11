@@ -1,7 +1,5 @@
 export type UserRole = 'admin' | 'user';
 
-
-
 export interface AuthUser {
   id: string;
   name?: string | null;
@@ -10,6 +8,7 @@ export interface AuthUser {
   emailVerified?: boolean;
   role?: UserRole;
 }
+
 export interface AuthSession {
   user: AuthUser;
 }
@@ -24,6 +23,7 @@ export interface RegisterInput {
   email: string;
   password: string;
   confirmPassword: string;
+  avatarFile?: File | null;
 }
 
 export interface ForgotPasswordInput {
